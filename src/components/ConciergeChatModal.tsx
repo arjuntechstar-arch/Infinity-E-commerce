@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, ActiveScheme } from '../types';
+import { api } from '../api/client';
 
 interface ConciergeChatModalProps {
   isOpen: boolean;
@@ -55,47 +56,64 @@ export const ConciergeChatModal: React.FC<ConciergeChatModalProps> = ({
     if (!textToSend) setInputText('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      let reply = "I'm here to help with all VoltMart schemes, installment orders, and warranties!";
-      let quick: string[] | undefined = undefined;
+    api.sendConciergeMessage(text)
+      .then((res) => {
+        setIsTyping(false);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `agent-${Date.now()}`,
+            sender: 'agent',
+            text: res.data.reply,
+            timestamp: res.data.timestamp || 'Just now',
+            quickReplies: res.data.quickReplies,
+          },
+        ]);
+      })
+      .catch(() => {
+        // Graceful fallback
+        setTimeout(() => {
+          let reply = "I'm here to help with all VoltMart schemes, installment orders, and warranties!";
+          let quick: string[] | undefined = undefined;
 
-      const lower = text.toLowerCase();
-      if (lower.includes('10+1') || lower.includes('how does') || lower.includes('work')) {
-        reply =
-          'In the VoltFlex 10+1 scheme, you deposit monthly installments for 10 months (e.g. $50 or $100/mo). Upon completing the 10th month, VoltMart contributes the 11th installment 100% FREE as shopping credit to buy any smartphone, TV, or appliance!';
-        quick = ['Enroll in 10+1 Scheme', 'View Available Schemes'];
-      } else if (lower.includes('debit') || lower.includes('when') || lower.includes('mandate')) {
-        const nextDate = activeSchemes[0]?.nextDebitDate || 'Oct 15, 2026';
-        reply = `Your next automated bank debit is scheduled for ${nextDate} for $${activeSchemes[0]?.monthlyDeposit || 100} from your linked ${activeSchemes[0]?.mandateBank || 'Chase checking'} account.`;
-        quick = ['Go to Payments Ledger', 'Manage Bank Mandate'];
-      } else if (lower.includes('withdraw') || lower.includes('refund') || lower.includes('cancel')) {
-        reply =
-          'You can withdraw funds from any active scheme anytime! If completed 6+ installments, there is 0% cancellation penalty. Your principal savings will be credited directly to your bank account within 24 hours.';
-        quick = ['Request Withdrawal', 'View Refund Ledger'];
-      } else if (lower.includes('warranty') || lower.includes('repair') || lower.includes('claim')) {
-        reply =
-          'All electronics purchased through VoltMart come with our 2-Year Official Brand Shield! If your device needs inspection or repair, you can file a complimentary claim directly from your Digital Warranty Vault.';
-        quick = ['Open Warranty Vault', 'Call Store Expert'];
-      } else {
-        reply = `Understood! You have ${activeSchemes.length} active schemes with $${activeSchemes.reduce(
-          (s, a) => s + a.accumulatedSavings,
-          0
-        )} saved. What would you like to explore next?`;
-        quick = ['Browse Products', 'View Active Schemes', 'Check Delivery'];
-      }
+          const lower = text.toLowerCase();
+          if (lower.includes('10+1') || lower.includes('how does') || lower.includes('work')) {
+            reply =
+              'In the VoltFlex 10+1 scheme, you deposit monthly installments for 10 months (e.g. $50 or $100/mo). Upon completing the 10th month, VoltMart contributes the 11th installment 100% FREE as shopping credit to buy any smartphone, TV, or appliance!';
+            quick = ['Enroll in 10+1 Scheme', 'View Available Schemes'];
+          } else if (lower.includes('debit') || lower.includes('when') || lower.includes('mandate')) {
+            const nextDate = activeSchemes[0]?.nextDebitDate || 'Oct 15, 2026';
+            reply = `Your next automated bank debit is scheduled for ${nextDate} for $${activeSchemes[0]?.monthlyDeposit || 100} from your linked ${activeSchemes[0]?.mandateBank || 'Chase checking'} account.`;
+            quick = ['Go to Payments Ledger', 'Manage Bank Mandate'];
+          } else if (lower.includes('withdraw') || lower.includes('refund') || lower.includes('cancel')) {
+            reply =
+              'You can withdraw funds from any active scheme anytime! If completed 6+ installments, there is 0% cancellation penalty. Your principal savings will be credited directly to your bank account within 24 hours.';
+            quick = ['Request Withdrawal', 'View Refund Ledger'];
+          } else if (lower.includes('warranty') || lower.includes('repair') || lower.includes('claim')) {
+            reply =
+              'All electronics purchased through VoltMart come with our 2-Year Official Brand Shield! If your device needs inspection or repair, you can file a complimentary claim directly from your Digital Warranty Vault.';
+            quick = ['Open Warranty Vault', 'Call Store Expert'];
+          } else {
+            reply = `Understood! You have ${activeSchemes.length} active schemes with $${activeSchemes.reduce(
+              (s, a) => s + a.accumulatedSavings,
+              0
+            )} saved. What would you like to explore next?`;
+            quick = ['Browse Products', 'View Active Schemes', 'Check Delivery'];
+          }
 
-      setIsTyping(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `agent-${Date.now()}`,
-          sender: 'agent',
-          text: reply,
-          timestamp: 'Just now',
-          quickReplies: quick,
-        },
-      ]);
-    }, 1000);
+          setIsTyping(false);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `agent-${Date.now()}`,
+              sender: 'agent',
+              text: reply,
+              timestamp: 'Just now',
+              quickReplies: quick,
+            },
+          ]);
+        }, 600);
+      });
   };
 
   return (
