@@ -1,0 +1,6 @@
+{
+  "name": "VoltMart - Electronics & Scheme Store",
+  "description": "Smart consumer electronics and appliances shopping with flexible VoltFlex savings schemes, 0% EMI, autopay mandates, KYC, and warranty vault.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
