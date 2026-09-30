@@ -1,0 +1,8 @@
+export type { ProductRow as Product, Settings } from '../../backend/commerce';
+export interface User { id: string; email: string; name: string; role: 'admin' | 'customer'; phone: string; phoneVerified: boolean; address: string; kycStatus: string }
+export interface Session { user: User | null; csrf: string | null }
+export interface Capabilities { payments: boolean; identity: boolean; phone: boolean; shipping: boolean }
+export interface Order { id: string; user_id: string; status: string; total: number; currency: string; subtotal: number; discount: number; tax: number; shipping: number; credited: number; checkout_id: string | null; created_at: string; carrier: string; tracking_number: string; tracking_url: string; address: { name: string; line1: string; line2: string; city: string; state: string; postalCode: string; country: string; phone: string }; items: { title: string; sku: string; price: number; quantity: number }[]; events: { status: string; note: string; created_at: string }[] }
+export interface Ticket { id: string; subject: string; kind: string; status: string; quote_amount: number | null; voucher_code: string | null; messages: { id: number; name: string; role: string; body: string; created_at: string }[] }
+export interface Plan { id: string; name: string; monthly: number; months: number; bonus_bps: number; terms: string; active: number }
+export interface Savings { data: { id: string; name: string; status: string; currency: string; monthly: number; months: number; deposited: number; installments: number; cancel_at: number | null }[]; credits: { id: string; amount: number; remaining: number }[] }
